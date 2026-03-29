@@ -1,0 +1,90 @@
+You are working as a data analyst for a company that builds free mobile apps (revenue comes from in-app ads). Your goal is to recommend app categories/genres that are likely to be profitable (attract many users).
+Answer these questions in your project:
+
+What are the most common app categories on Google Play Store?
+Which categories have the highest number of installs (most popular)?
+Which categories have the best average ratings?
+How do free vs paid apps perform in terms of installs and ratings?
+What are the top 5 genres that attract the most users?
+Are there categories where apps are mostly free but still get high installs? (Ideal for ad-based revenue)
+Any patterns in app size, content rating, or number of reviews?
+# Step 1: Import Libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Optional for better visuals
+plt.style.use('ggplot')
+sns.set_palette("husl")
+%matplotlib inline
+# Step 2: Load the Dataset
+df = pd.read_csv('googleplaystore.csv')   # Change path if needed
+
+# Quick look
+print(df.shape)
+print(df.head())
+print(df.columns)
+# Step 3: Data Cleaning (Very Important for this dataset)
+
+# 1. Remove duplicates
+df = df.drop_duplicates(subset='App')
+
+# 2. Handle missing values
+print(df.isnull().sum())
+df = df.dropna(subset=['Rating', 'Type', 'Content Rating'])
+
+# 3. Clean 'Installs' column (remove '+' and ',' and convert to numeric)
+df['Installs'] = df['Installs'].str.replace('+', '', regex=False)
+df['Installs'] = df['Installs'].str.replace(',', '', regex=False)
+df['Installs'] = pd.to_numeric(df['Installs'], errors='coerce')
+
+# 4. Clean 'Size' column (convert 'M' and 'k' to numeric in MB)
+def convert_size(size):
+    if isinstance(size, str):
+        if 'M' in size:
+            return float(size.replace('M', ''))
+        elif 'k' in size:
+            return float(size.replace('k', '')) / 1000
+    return np.nan
+
+df['Size'] = df['Size'].apply(convert_size)
+
+# 5. Clean 'Price' (remove '$')
+df['Price'] = df['Price'].str.replace('$', '', regex=False).astype(float)
+
+# 6. Convert Reviews to numeric
+df['Reviews'] = pd.to_numeric(df['Reviews'], errors='coerce')
+
+print("Cleaned Data Shape:", df.shape)
+# Step 4: Exploratory Data Analysis (EDA)
+
+# Question 1: Top Categories by number of apps
+plt.figure(figsize=(12,8))
+sns.countplot(y='Category', data=df, order=df['Category'].value_counts().index[:15])
+plt.title('Top 15 App Categories by Count')
+plt.show()
+
+# Question 2: Top Categories by Total Installs
+category_installs = df.groupby('Category')['Installs'].sum().sort_values(ascending=False)
+
+plt.figure(figsize=(12,8))
+sns.barplot(x=category_installs.head(10).values, y=category_installs.head(10).index)
+plt.title('Top 10 Categories by Total Installs')
+plt.xlabel('Total Installs (Billions)')
+plt.show()
+# Question 3: Average Rating by Category
+avg_rating = df.groupby('Category')['Rating'].mean().sort_values(ascending=False)
+
+plt.figure(figsize=(12,8))
+sns.barplot(x=avg_rating.head(10).values, y=avg_rating.head(10).index)
+plt.title('Top 10 Categories by Average Rating')
+plt.show()
+# Free vs Paid Analysis
+free_vs_paid = df.groupby('Type').agg({
+    'Installs': 'mean',
+    'Rating': 'mean',
+    'Reviews': 'mean'
+}).round(2)
+
+print(free_vs_paid)
