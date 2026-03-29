@@ -23,7 +23,7 @@ As a data analyst, the goal was to help a company decide **what kind of apps to 
 - **NumPy** – Numerical operations
 - **Matplotlib & Seaborn** – Data visualization
 - **Plotly** (optional) – Interactive charts
-- 
+  
 ## Key Insights
 - **Games**, **Family**, **Tools**, and **Entertainment** are among the most installed categories.
 - Free apps generally receive significantly higher installs compared to paid apps.
@@ -49,4 +49,3 @@ These categories show high user engagement and are ideal for **ad-based revenue 
 
 
 
-## Project Structure
